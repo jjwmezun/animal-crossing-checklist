@@ -20,11 +20,20 @@ function generateCheckListType( type: string, columns: ColumnType[] ) {
 		const { item, checked, generateOnCheck } = props;
 		const { name, order } = item as { name: string, order: number };
 
-		return <tr>
-			<td><input type="checkbox" checked={ checked } onChange={ generateOnCheck } /></td>
-			<td>{ order }.</td>
-			<td>{ name }</td>
-			{ columns.map( ( column: ColumnType, index: number ) => <td key={ index }>
+		const classes = [ `checklist-table__row` ];
+		if ( checked ) {
+			classes.push( `checklist-table__row--checked` );
+		}
+
+		return <tr className={ classes.join( ` ` ) } onClick={ generateOnCheck }>
+			<td className="checklist-table__cell">
+				<div className="checklist-table__check">
+					<input type="checkbox" checked={ checked } />
+				</div>
+			</td>
+			<td className="checklist-table__cell number">{ order }.</td>
+			<td className="checklist-table__cell">{ name }</td>
+			{ columns.map( ( column: ColumnType, index: number ) => <td key={ index } className="checklist-table__cell">
 				{ column.render( item ) }
 			</td> ) }
 		</tr>;
@@ -34,15 +43,16 @@ function generateCheckListType( type: string, columns: ColumnType[] ) {
 		const { checked, generateOnCheck, list } = props;
 
 		return <div>
-			<h2>{ toTitleCase( type ) }</h2>
-			<table>
+			<h2 className="checklist__title">{ toTitleCase( type ) }</h2>
+			<table className="checklist-table">
 				<thead>
 					<tr>
-						<th>Check</th>
-						<th>Order</th>
-						<th>Name</th>
+						<th className="checklist-table__cell">Check</th>
+						<th className="checklist-table__cell">Order</th>
+						<th className="checklist-table__cell">Name</th>
 						{ columns.map( ( column: ColumnType, index: number ) => <th
 							key={ index }
+							className="checklist-table__cell"
 						>
 							{ column.title }
 						</th> ) }

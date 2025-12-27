@@ -1,0 +1,96 @@
+@font-face {
+    font-family: "Fink Heavy";
+    src: url( "./FinkHeavy.woff2" ) format( "woff2" ),
+         url( "./FinkHeavy.woff" ) format( "woff" );
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+// Variable overrides first
+$primary: #e96a25;
+$secondary: #30b8ea;
+$enable-shadows: true;
+$font-family-base: "Fink Heavy", sans-serif;
+$font-size-base: 1.333rem;
+
+// Then import Bootstrap
+@import "../../../../node_modules/bootstrap/scss/bootstrap.scss";
+
+body {
+	background-image: url( "./bg.png" );
+	letter-spacing: 0.002rem;
+}
+
+.app {
+	padding: 3rem;
+}
+
+.app__title {
+	text-align: center;
+	font-weight: 900;
+	margin-bottom: 3rem;
+    position: relative;
+    z-index: 0;
+    color: #e6bb4a;
+    font-size: 4rem;
+    letter-spacing: 0.1rem;
+
+    &:before {
+	    text-align: center;
+        content: attr( title );
+        position: absolute;
+        -webkit-text-stroke: 0.75rem #57350c;
+        left: 50%;
+        transform: translateX( -50% );
+        z-index: -1;
+    }
+}
+
+.export {
+	margin: 1rem 0;
+	text-align: center;
+}
+
+.yes {
+	color: green;
+}
+
+.no {
+	color: rgb( 206, 5, 5 );
+}
+
+.number {
+	text-align: right;
+}
+
+.red {
+	color: rgb(167, 0, 0);
+}
+
+.green {
+	color: rgb(1, 126, 57);
+}
+
+.blue {
+	color: blue;
+}
+
+.yellow {
+	color: yellow;
+    text-shadow: 1px 1px 0 rgba( 0, 0, 0, 0.5 );
+}
+
+.orange {
+	color: orange;
+}
+
+.price {
+    background-image: url( "./bell-icon.png" );
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    padding-left: 2.25rem;
+}

@@ -85,10 +85,11 @@ function App( props: appPropTypes ): React.JSX.Element {
 
 	const startExport = () => window.electronAPI.openExportWindow( checked );
 
-	return <div>
+	return <div className="app">
+		<h1 className="app__title" title="Animal Crossing Checklist">Animal Crossing Checklist</h1>
 		<TypeMenu currentType={ itemType } setItemType={ setItemType } />
-		<div>
-			<button className="btn btn-primary" type="button" onClick={ startExport }>Export Checklist</button>
+		<div className="export">
+			<button className="btn btn-secondary" type="button" onClick={ startExport }>Export Checklist</button>
 		</div>
 		<div>
 			{ itemType === ItemType.Carpet && <Carpet
