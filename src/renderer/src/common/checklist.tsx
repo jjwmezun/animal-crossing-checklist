@@ -41,13 +41,16 @@ function generateCheckListType( type: string, columns: ColumnType[] ) {
 
 	return function CheckList( props: CheckListProps ): React.JSX.Element {
 		const { checked, generateOnCheck, list } = props;
+		const numberChecked = Object.values( checked ).filter( v => v ).length;
 
 		return <div>
 			<h2 className="checklist__title">{ toTitleCase( type ) }</h2>
 			<table className="checklist-table">
 				<thead>
 					<tr>
-						<th className="checklist-table__cell">Check</th>
+						<th className="checklist-table__cell checklist-table__check-count">
+							{ numberChecked } / { list.length }
+						</th>
 						<th className="checklist-table__cell">Order</th>
 						<th className="checklist-table__cell">Name</th>
 						{ columns.map( ( column: ColumnType, index: number ) => <th
