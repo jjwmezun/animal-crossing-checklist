@@ -9,6 +9,7 @@ import Gyroids from './Gyroids';
 import Handhelds from './Handhelds';
 import Insects from './Insects';
 import Music from './Music';
+import Search from './Search';
 import Stationery from './Stationery';
 import Wallpaper from './Wallpaper';
 
@@ -152,6 +153,7 @@ function App( props: appPropTypes ): React.JSX.Element {
 				generateOnCheck={ generateOnCheck( ItemType.Wallpaper ) }
 			/> }
 		</div>
+		<Search />
 	</div>;
 }
 
