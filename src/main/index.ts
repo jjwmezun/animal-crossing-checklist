@@ -57,7 +57,6 @@ function createWindow(): void {
 			],
 		} ).then( result => {
 			if ( !result.canceled ) {
-				console.log( data );
 				fs.writeFileSync( result.filePath as string, JSON.stringify( data, null, 2 ) );
 			}
 		} );
