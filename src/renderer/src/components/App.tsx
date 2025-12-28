@@ -10,6 +10,7 @@ import Handhelds from './Handhelds';
 import Insects from './Insects';
 import Music from './Music';
 import Stationery from './Stationery';
+import Wallpaper from './Wallpaper';
 
 interface DataType {
 	carpet: object[],
@@ -22,6 +23,7 @@ interface DataType {
 	insects: object[],
 	music: object[],
 	stationery: object[],
+	wallpaper: object[],
 }
 
 interface appPropTypes {
@@ -50,6 +52,7 @@ enum ItemType {
 	Insects = `insects`,
 	Music = `music`,
 	Stationery = `stationery`,
+	Wallpaper = `wallpaper`,
 }
 
 function App( props: appPropTypes ): React.JSX.Element {
@@ -65,6 +68,7 @@ function App( props: appPropTypes ): React.JSX.Element {
 		insects,
 		music,
 		stationery,
+		wallpaper,
 	} = data as DataType;
 	const [ itemType, setItemType ] = useState<ItemType>( ItemType.Carpet );
 	const [ checked, setChecked ] = useState<object>( generateCheckData( data ) );
@@ -141,6 +145,11 @@ function App( props: appPropTypes ): React.JSX.Element {
 				list={ stationery }
 				checked={ checked.stationery }
 				generateOnCheck={ generateOnCheck( ItemType.Stationery ) }
+			/> }
+			{ itemType === ItemType.Wallpaper && <Wallpaper
+				list={ wallpaper }
+				checked={ checked.wallpaper }
+				generateOnCheck={ generateOnCheck( ItemType.Wallpaper ) }
 			/> }
 		</div>
 	</div>;
