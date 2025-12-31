@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Carpet from './Carpet';
 import Clothing from './Clothing';
@@ -73,28 +73,117 @@ function App( props: appPropTypes ): React.JSX.Element {
 	} = data as DataType;
 	const [ itemType, setItemType ] = useState<ItemType>( ItemType.Carpet );
 	const [ checked, setChecked ] = useState<object>( generateCheckData( data ) );
+	const [ hardSave, setHardSave ] = useState<object | null>( generateHardSaveData( data ) );
+
+	const dataIsEmpty = isDataEmpty( checked );
+	const disableHardSave = dataIsEmpty || ( hardSave !== null && testDataAreEqual( checked, hardSave ) );
+	const disableLoadHardSave = hardSave === null || testDataAreEqual( checked, hardSave );
+
+	const clearChecklist = () => {
+		if ( confirm( `¿Are you sure you want to clear your checklist? This action can’t be undone.` ) ) {
+			const newChecked = generateEmptyCheckData( data );
+			setChecked( newChecked );
+			setHardSave( null );
+			for ( const type in newChecked ) {
+				for ( let i = 0; i < data[ type ].length; i++ ) {
+					localStorage.removeItem( `${ type }-${ i }` );
+				}
+			}
+			localStorage.removeItem( `hard-save` );
+		}
+	};
+
+	const onImportData = ( _event: Electron.IpcRendererEvent, importData: object ) => {
+		setChecked( importData );
+		updateLocalStorage( importData );
+	};
 
 	const generateOnCheck = ( type: ItemType ) => ( index: number ) => {
 		return () => {
-			const newChecked = {
-				...checked,
-				[ type ]: {
-					...checked[ type ],
-					[ index ]: !checked[ type ][ index ],
-				},
-			};
+			const newChecked = { ...checked };
+			newChecked[ type ][ index ] = !newChecked[ type ][ index ];
 			setChecked( newChecked );
-			localStorage.setItem( `${ type }-${ index }`, newChecked[ type ][ index ] ? `1` : `0` );
+			saveCheck( type, index, newChecked );
 		};
 	};
 
 	const startExport = () => window.electronAPI.openExportWindow( checked );
 
+	const startImport = () => {
+		if ( dataIsEmpty
+			|| confirm( `Importing a checklist will o’erwrite your current checklist.
+				¿Are you sure you want to continue?` )
+		) {
+			window.electronAPI.openImportWindow();
+		}
+	};
+
+	const updateHardSave = () => {
+		const newHardSave = structuredClone( checked );
+		setHardSave( newHardSave );
+		const hardSaveString = createHardSaveString( newHardSave );
+		localStorage.setItem( `hard-save`, hardSaveString );
+	};
+
+	const loadHardSave = () => {
+		if ( hardSave === null ) {
+			return;
+		}
+		if ( confirm( `¿Are you sure you want to load the hard save? This will o’erwrite your current checklist.` ) ) {
+			const newChecked = structuredClone( hardSave );
+			setChecked( newChecked );
+			updateLocalStorage( newChecked );
+		}
+	};
+
+	useEffect( () => {
+		window.electronAPI.on( `import-data`, onImportData );
+		return () => window.electronAPI.remove( `import-data` );
+	}, [] );
+
 	return <div className="app">
 		<h1 className="app__title" title="Animal Crossing Checklist">Animal Crossing Checklist</h1>
 		<TypeMenu currentType={ itemType } setItemType={ setItemType } />
 		<div className="export">
-			<button className="btn btn-secondary" type="button" onClick={ startExport }>Export Checklist</button>
+			<button
+				className="btn btn-secondary"
+				disabled={ disableHardSave }
+				type="button"
+				onClick={ updateHardSave }
+			>
+				Create Hard Save
+			</button>
+			<button
+				className="btn btn-secondary"
+				disabled={ disableLoadHardSave }
+				type="button"
+				onClick={ loadHardSave }
+			>
+				Load Hard Save
+			</button>
+			<button
+				className="btn btn-secondary"
+				disabled={ dataIsEmpty }
+				type="button"
+				onClick={ startExport }
+			>
+				Export Checklist
+			</button>
+			<button
+				className="btn btn-secondary"
+				type="button"
+				onClick={ startImport }
+			>
+				Import Checklist
+			</button>
+			<button
+				className="btn btn-secondary"
+				disabled={ dataIsEmpty }
+				type="button"
+				onClick={ clearChecklist }
+			>
+				Clear Checklist
+			</button>
 		</div>
 		<div>
 			{ itemType === ItemType.Carpet && <Carpet
@@ -185,6 +274,43 @@ function TypeMenuItem( props: typeMenuItemPropTypes ): React.JSX.Element {
 	</li>;
 }
 
+function isDataEmpty( data: object ): boolean {
+	for ( const type in data ) {
+		for ( const item of data[ type ] ) {
+			if ( item ) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+function generateHardSaveData( data: object ): object | null {
+	const save = localStorage.getItem( `hard-save` );
+	if ( ! save ) {
+		return null;
+	}
+	const saveData: boolean[] = save.split( `` ).map( char => char === `1` );
+	const out = {};
+	for ( const type in data ) {
+		out[ type ] = [];
+		for ( let i = 0; i < data[ type ].length; i++ ) {
+			out[ type ][ i ] = saveData.shift();
+		}
+	}
+	return out;
+}
+
+function createHardSaveString( data: object ): string {
+	let out = ``;
+	for ( const type in data ) {
+		for ( const item of data[ type ] ) {
+			out += item ? `1` : `0`;
+		}
+	}
+	return out;
+}
+
 function generateCheckData( data: object ): object {
 	const out = {};
 	for ( const key in data ) {
@@ -194,6 +320,37 @@ function generateCheckData( data: object ): object {
 		} );
 	}
 	return out;
+}
+
+function generateEmptyCheckData( data: object ): object {
+	const out = {};
+	for ( const key in data ) {
+		out[ key ] = data[ key ].map( () => false );
+	}
+	return out;
+}
+
+function testDataAreEqual( data1: object, data2: object ): boolean {
+	for ( const type in data1 ) {
+		for ( let i = 0; i < data1[ type ].length; i++ ) {
+			if ( data1[ type ][ i ] !== data2[ type ][ i ] ) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+function updateLocalStorage( list: object ): void {
+	for ( const type in list ) {
+		for ( let i = 0; i < list[ type ].length; i++ ) {
+			saveCheck( type, i, list );
+		}
+	}
+}
+
+function saveCheck( type: string, index: number, list: object ): void {
+	localStorage.setItem( `${ type }-${ index }`, list[ type ][ index ] ? `1` : `0` );
 }
 
 export default App;

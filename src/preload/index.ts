@@ -12,7 +12,13 @@ if ( process.contextIsolated ) {
 		contextBridge.exposeInMainWorld( `electron`, electronAPI );
 		contextBridge.exposeInMainWorld( `api`, api );
 		contextBridge.exposeInMainWorld( `electronAPI`, {
+			on: (
+				channel: string,
+				callback: ( event: Electron.IpcRendererEvent, data: object ) => void,
+			) => ipcRenderer.on( channel, callback ),
 			openExportWindow: ( data: object ) => ipcRenderer.send( `open-export-window`, data ),
+			openImportWindow: () => ipcRenderer.send( `open-import-window` ),
+			remove: ( channel: string ) => ipcRenderer.removeAllListeners( channel ),
 		} );
 	} catch ( error ) {
 		console.error( error );
@@ -26,6 +32,12 @@ if ( process.contextIsolated ) {
 
 	// @ts-expect-error (define in dts)
 	window.electronAPI = {
+		on: (
+			channel: string,
+			callback: ( event: Electron.IpcRendererEvent, data: object ) => void,
+		) => ipcRenderer.on( channel, callback ),
 		openExportWindow: ( data: object ) => ipcRenderer.send( `open-export-window`, data ),
+		openImportWindow: () => ipcRenderer.send( `open-import-window` ),
+		remove: ( channel: string ) => ipcRenderer.removeAllListeners( channel ),
 	};
 }

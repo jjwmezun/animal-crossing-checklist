@@ -51,6 +51,9 @@ body {
 .export {
 	margin: 1rem 0;
 	text-align: center;
+	display: flex;
+	gap: 0.5rem;
+    justify-content: center;
 }
 
 .yes {

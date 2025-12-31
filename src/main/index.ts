@@ -57,12 +57,30 @@ function createWindow(): void {
 			],
 		} ).then( result => {
 			if ( !result.canceled ) {
-				fs.writeFileSync( result.filePath as string, JSON.stringify( data, null, 2 ) );
+				const out = JSON.stringify( data, null, 2 );
+				fs.writeFileSync( result.filePath as string, out );
+			}
+		} );
+	};
+
+	const openImportWindow = () => {
+		dialog.showOpenDialog( null, {
+			title: `Import Checklist`,
+			filters: [
+				{ name: `Checklist`, extensions: [ `json` ] },
+			],
+		} ).then( result => {
+			if ( !result.canceled ) {
+				const filePath = result.filePaths[ 0 ];
+				const inData = fs.readFileSync( filePath, `utf-8` );
+				const data = JSON.parse( inData );
+				mainWindow.webContents.send( `import-data`, data );
 			}
 		} );
 	};
 
 	ipcMain.on( `open-export-window`, openExportWindow );
+	ipcMain.on( `open-import-window`, openImportWindow );
 }
 
 // This method will be called when Electron has finished
